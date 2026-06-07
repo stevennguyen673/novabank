@@ -33,3 +33,34 @@
 - `testMatch` — only treats files ending in .test.ts as test files
 - `transform` — when Jest sees .ts file, runs it through ts-jest first to compile
 - `verbose` - prints each test name when running, not just a summary
+
+## Docker Compose
+
+Two containers — postgres and redis. Run with `docker compose up -d`, stop with `docker compose down`.
+
+### Why Docker?
+Without it you'd install Postgres locally, manage versions manually, and it'd work 
+differently on every machine. With Docker anyone can clone the repo and have an 
+identical environment in seconds. Also why CI/CD can run your tests reliably.
+
+### Key concepts
+
+**image** — which Docker image to pull. `alpine` variants are stripped-down Linux, 
+smaller and faster to download.
+
+**ports** — format is `host:container`. Left side is what your machine connects to, 
+right side is the port inside the container.
+
+**volumes** — named volumes persist data when the container restarts. Without this, 
+every `docker compose down` would wipe your database.
+
+**healthcheck** — Docker waits until this passes before marking the container ready. 
+`pg_isready` is a Postgres built-in that confirms the DB is actually accepting 
+connections, not just that the container started.
+
+**environment variables** — credentials passed into the container at runtime. 
+In production these come from a secrets manager, never hardcoded.
+
+### .env.example
+Committed to the repo as a template. The actual `.env` is gitignored so secrets 
+never get pushed. Anyone cloning copies this file and fills in real values.
