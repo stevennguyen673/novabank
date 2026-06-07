@@ -64,3 +64,33 @@ In production these come from a secrets manager, never hardcoded.
 ### .env.example
 Committed to the repo as a template. The actual `.env` is gitignored so secrets 
 never get pushed. Anyone cloning copies this file and fills in real values.
+
+## Database Schema
+
+### Why 4 tables?
+- `accounts` — users can have multiple accounts. Can't store balance on users table.
+- `transactions` — records the intent (a transfer happened).
+- `ledger_entries` — records the effect (these accounts moved by this amount).
+  Append-only, never updated or deleted. The permanent audit trail.
+- `accounts.balance` is a derived value — it could be recomputed by replaying 
+  all ledger entries. The ledger is the truth, balance is a convenience.
+
+### balance_after on ledger_entries
+A snapshot of the balance at the exact moment the entry was written.
+Lets an auditor reconstruct account state at any point in time without
+replaying every entry from the beginning.
+
+### version on accounts
+Optimistic locking counter for non-transfer writes (e.g. status changes).
+Pattern: UPDATE accounts SET status = $1, version = version + 1 
+WHERE id = $2 AND version = $3
+If 0 rows affected — someone else modified it, retry.
+
+### Why BIGINT for balance?
+INT maxes at ~$21 million in cents. BIGINT handles 9.2 quintillion.
+Never use FLOAT for money — floating point is imprecise.
+0.1 + 0.2 = 0.30000000000000004 in IEEE 754.
+
+### Indexes
+Added on every foreign key and any column frequently used in WHERE clauses.
+Without indexes those queries do full table scans — O(n) instead of O(log n).
