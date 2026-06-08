@@ -142,3 +142,13 @@ when done because the script exits after running.
 Why a pool? A banking API gets hundreds of requests per second. Opening a fresh 
 database connection per request costs ~20ms each time. A pool keeps connections 
 warm — borrowing one takes microseconds.
+
+## Error Handling (src/utils/errors.ts)
+
+AppError extends Error with two extra fields — ErrorCode and HTTP status code.
+The error handler in the API layer checks instanceof AppError and uses these
+fields to send the right response. No string inspection needed.
+
+Errors object has one typed constructor per failure scenario.
+throw Errors.accountNotFound(id) is cleaner and safer than throw new Error('...')
+because the status code is baked in, not guessed at in the handler.
