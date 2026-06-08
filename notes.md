@@ -104,3 +104,18 @@ Docker port mapping format is host:container — so 5433:5432 means:
 - Outside the container (your app): connect to localhost:5433
 - Inside the container: Postgres still runs on its default 5432
 
+
+## src/types/index.ts
+
+Central type definitions for the entire application. Three categories:
+
+- **Enums** — mirror the Postgres ENUMs exactly. Constrains values to only what's valid.
+- **Domain interfaces** — one per database table, typed representation of a row.
+  Use bigint for balance and amount — floats are imprecise for money.
+- **Request DTOs** — define the exact shape of data expected from the client,
+  like @RequestBody in Spring Boot.
+- **ErrorCode enum** — typed error codes for every failure scenario so the API
+  layer never has to inspect error messages to decide what status code to return.
+
+Everything is exported and imported where needed. The compiler catches type 
+mismatches at build time, not at runtime when real money is moving.
