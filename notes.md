@@ -94,3 +94,13 @@ Never use FLOAT for money — floating point is imprecise.
 ### Indexes
 Added on every foreign key and any column frequently used in WHERE clauses.
 Without indexes those queries do full table scans — O(n) instead of O(log n).
+
+## Environment & Ports
+
+Changed Docker PostgreSQL host port from 5432 to 5433 to avoid conflict with a 
+local PostgreSQL installation that was already running on 5432.
+
+Docker port mapping format is host:container — so 5433:5432 means:
+- Outside the container (your app): connect to localhost:5433
+- Inside the container: Postgres still runs on its default 5432
+
