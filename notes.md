@@ -119,3 +119,26 @@ Central type definitions for the entire application. Three categories:
 
 Everything is exported and imported where needed. The compiler catches type 
 mismatches at build time, not at runtime when real money is moving.
+
+## DB Connection Pool (src/db/pool.ts)
+
+A pool keeps multiple database connections open and ready.
+Requests borrow a connection, use it, return it — no handshake overhead.
+
+Three exports:
+- query() — for simple single queries
+- getClient() — for dedicated client when you need manual control
+- withTransaction() — wraps multiple queries in BEGIN/COMMIT. 
+  If anything throws, it ROLLBACKs automatically.
+  This is what makes transfers atomic — debit and credit are 
+  either both committed or both rolled back. Money never vanishes.
+
+  ## Connection Pool Summary
+
+pool.ts — one shared pool instance for the entire app. Stays alive forever.
+migrate.ts — standalone pool just for the migration script. Calls pool.end() 
+when done because the script exits after running.
+
+Why a pool? A banking API gets hundreds of requests per second. Opening a fresh 
+database connection per request costs ~20ms each time. A pool keeps connections 
+warm — borrowing one takes microseconds.
