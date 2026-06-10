@@ -152,3 +152,7 @@ fields to send the right response. No string inspection needed.
 Errors object has one typed constructor per failure scenario.
 throw Errors.accountNotFound(id) is cleaner and safer than throw new Error('...')
 because the status code is baked in, not guessed at in the handler.
+
+## Parameterized Queries
+Always use $1, $2 placeholders instead of string interpolation.
+Prevents SQL injection — Postgres treats values as data, never as executable SQL.
