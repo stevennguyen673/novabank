@@ -156,3 +156,24 @@ because the status code is baked in, not guessed at in the handler.
 ## Parameterized Queries
 Always use $1, $2 placeholders instead of string interpolation.
 Prevents SQL injection — Postgres treats values as data, never as executable SQL.
+
+## TypeScript / pg Patterns
+
+**rows[0]** — query() always returns an array. rows[0] is the first (and usually only) 
+item. Used when querying by a unique field like id — result is either 0 or 1 rows.
+
+**$1, $2, $3** — parameterized query placeholders. Map to the array passed as the 
+second argument in order. Never put values directly in the SQL string — prevents 
+SQL injection.
+
+**BigInt(row.balance as string)** — pg returns BIGINT columns as strings to avoid 
+JavaScript number precision loss. Always convert to bigint explicitly when 
+deserializing a row.
+
+**...account** — spread operator. Copies all fields from the raw row, then we 
+override specific fields with converted types. Used to satisfy the Account interface 
+which expects bigint for balance and version, not strings.
+
+**Record<string, unknown>** — TypeScript type for a raw pg row before deserialization. 
+An object with string keys and unknown value types. Gets converted to a typed 
+interface (Account, Transaction etc) via rowTo* helper functions.

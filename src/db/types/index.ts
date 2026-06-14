@@ -79,9 +79,19 @@ export interface DepositRequest {
   idempotency_key: string;
 }
 
+export interface DepositResult {
+  transaction: Transaction;
+  balance_after: bigint;
+}
+
 export interface WithdrawalRequest {
   amount: number;
   idempotency_key: string;
+}
+
+export interface WithdrawalResult {
+  transaction: Transaction;
+  balance_after: bigint;
 }
 
 export interface TransferRequest {
@@ -89,6 +99,12 @@ export interface TransferRequest {
   to_account_id: string;
   amount: number;
   idempotency_key: string;
+}
+
+export interface TransferResult {
+  transaction: Transaction;
+  from_balance_after: bigint;
+  to_balance_after: bigint;
 }
 
 //Error Enum
