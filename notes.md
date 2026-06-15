@@ -177,3 +177,21 @@ which expects bigint for balance and version, not strings.
 **Record<string, unknown>** — TypeScript type for a raw pg row before deserialization. 
 An object with string keys and unknown value types. Gets converted to a typed 
 interface (Account, Transaction etc) via rowTo* helper functions.
+
+## API Layer — request data locations
+- req.params — URL path values (:id)
+- req.body — request payload (amount, type, etc)
+- req.headers — request metadata (idempotency-key, auth tokens)
+- req.query — URL query string (?limit=20&before=...)
+
+Never return raw DB objects — only the fields the client needs.
+Always convert bigint to Number() before sending JSON.
+
+## API Layer — app.ts vs index.ts
+- app.ts — creates and configures the Express app. Registers middleware (JSON parsing), mounts routers at their paths (/accounts, /transfers), and registers the error handler. Exported as a module so it can be imported by index.ts and also by tests without starting a server.
+
+- index.ts — the entry point. Imports app and calls app.listen() to actually boot the server on a port. Reads port from process.env.PORT with a fallback to 3000. This is the file Node runs when the app starts.
+
+- Why separate them? If app.listen() lived in app.ts, importing the app in tests would immediately start a server. Keeping them separate means tests can import app cleanly without side effects.
+
+- express-async-errors — without this, errors thrown inside async route handlers become unhandled promise rejections that Express never sees. The error handler middleware never fires. Either install this package (one import at the top of app.ts) or manually wrap every route in try/catch and call next(err) in the catch block.

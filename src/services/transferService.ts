@@ -1,9 +1,9 @@
-import { withTransaction } from '../pool';
+import { withTransaction } from '../db/pool';
 import { Transaction, TransactionType, TransactionStatus, DepositResult, WithdrawalResult, TransferResult } from '../types';
 import { assertAccountActive } from './accountService';
 import { Errors } from '../utils/errors';
 import { v4 as uuidv4 } from 'uuid';
-import { query } from '../pool';
+import { query } from '../db/pool';
 
 /**
  * Transfer Service

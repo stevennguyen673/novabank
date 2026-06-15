@@ -1,4 +1,4 @@
-import { query } from '../pool';
+import { query } from '../db/pool';
 import { Account, AccountType, AccountStatus, CreateAccountRequest } from '../types';
 import { Errors } from '../utils/errors';
 import { v4 as uuidv4 } from 'uuid';
