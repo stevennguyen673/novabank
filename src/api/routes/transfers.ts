@@ -1,19 +1,15 @@
 import { Router, Request, Response, NextFunction } from 'express';
 import { transfer, getTransaction } from '../../services/transferService';
-import { Errors } from '../../utils/errors';
+import { idempotencyMiddleware } from '../middleware/idempotency';
 
 const router = Router();
 
 // POST /transfers — initiate a transfer between two accounts
 // Requires Idempotency-Key header to prevent duplicate transfers
-router.post('/', async (req: Request, res: Response, next: NextFunction) => {
+router.post('/', idempotencyMiddleware, async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { fromAccountId, toAccountId, amount } = req.body;
         const idempotencyKey = req.headers['idempotency-key'] as string;
-
-        if (!idempotencyKey) {
-            throw Errors.missingIdempotencyKey();
-        }
 
         const result = await transfer({ fromAccountId, toAccountId, amount, idempotencyKey });
 
