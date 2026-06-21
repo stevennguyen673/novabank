@@ -195,3 +195,12 @@ Always convert bigint to Number() before sending JSON.
 - Why separate them? If app.listen() lived in app.ts, importing the app in tests would immediately start a server. Keeping them separate means tests can import app cleanly without side effects.
 
 - express-async-errors — without this, errors thrown inside async route handlers become unhandled promise rejections that Express never sees. The error handler middleware never fires. Either install this package (one import at the top of app.ts) or manually wrap every route in try/catch and call next(err) in the catch block.
+
+## Middleware
+Middleware in Express are functions that run between the request arriving and the route handler responding. Each middleware receives (req, res, next) — it can read/modify the request, send a response early, or call next() to pass control to the next middleware or route handler. Order matters — middleware runs top to bottom in the order it's registered.
+
+### errorHandler (src/api/middleware/errorHandler.ts)
+Sits at the very end of the middleware chain — registered last in app.ts. When any route handler calls next(err), Express skips all remaining routes and middleware and jumps straight to the error handler. Checks if the error is an AppError (business logic error with a known status code) and sends the right response. For unexpected errors, logs them and returns a generic 500 so internals are never leaked to the client.
+
+### idempotencyMiddleware (src/api/middleware/idempotency.ts)
+Applied directly on POST routes. Runs before the route handler to catch duplicate requests. Checks Redis first, falls back to Postgres, and if both miss it intercepts res.json before calling next(). The intercept is necessary because by the time the route handler builds the response, the middleware has already handed off control — the only way to see and cache the response is to wrap res.json before next() is called, so when the route handler eventually calls it, the middleware's wrapper fires first.
